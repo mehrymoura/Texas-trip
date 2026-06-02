@@ -121,25 +121,35 @@
             border-bottom: 1px dashed var(--leather-light);
         }
 
+        /* Dynamic Photo Gallery Containers */
+        .photo-gallery {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
         /* Polaroid Image Styling */
         .polaroid-snap {
             background: #fff;
             padding: 15px 15px 25px 15px;
-            margin: 25px 0;
+            margin: 15px 0;
             box-shadow: 0 4px 10px rgba(0,0,0,0.12);
             border: 1px solid var(--border-color);
             max-width: 450px;
             display: block;
+            animation: fadeIn 0.5s ease;
         }
-        .polaroid-snap.tilt-left { transform: rotate(-1.5deg); }
-        .polaroid-snap.tilt-right { transform: rotate(1.5deg); }
+        .polaroid-snap:nth-child(even) { transform: rotate(-1.5deg); }
+        .polaroid-snap:nth-child(odd) { transform: rotate(1.5deg); }
+
         .polaroid-snap img {
             width: 100%;
             height: auto;
             display: block;
             border: 1px solid #e0d8d0;
-            background-color: #eee;
         }
+
         .polaroid-caption {
             font-family: 'Courier New', monospace;
             font-size: 0.9rem;
@@ -537,10 +547,7 @@
             <div class="checklist-item"><input type="checkbox"><span>Check in: <span class="highlight-text">The Vaquero Motel</span></span></div>
             <div class="checklist-item"><input type="checkbox"><span>Steak Night at 11th Street Bar</span></div>
             
-            <div class="polaroid-snap tilt-left">
-                <img src="images/steak_night.jpg" alt="11th Street Bar Steak Night Photo">
-                <div class="polaroid-caption">Cooking my Lowe's Ribeye at 11th Street!</div>
-            </div>
+            <div id="gallery-chapter1" class="photo-gallery"></div>
 
             <h3>June 4 (THU) - The Ride & The Honky Tonk</h3>
             <div class="checklist-item"><input type="checkbox"><span>Early Morning: drive the "Twisted Sisters" scenic route</span></div>
@@ -574,11 +581,6 @@
             <div class="checklist-item"><input type="checkbox"><span>Drive to Luckenbach, TX</span></div>
             <div class="checklist-item"><input type="checkbox"><span>Afternoon/Evening: Birthday beer and live music under the oak trees</span></div>
             <div class="checklist-item"><input type="checkbox"><span>Drive to Fredericksburg & check in to motel</span></div>
-            
-            <div class="polaroid-snap tilt-right">
-                <img src="images/birthday_ride.jpg" alt="Birthday Trail Ride Photo">
-                <div class="polaroid-caption">Best birthday ever - Bandera Trail Ride!</div>
-            </div>
 
             <h3>June 8 (MON) - Outlaws & BBQ</h3>
             <div class="checklist-item"><input type="checkbox"><span>Morning: Check out & walk Fredericksburg main st.</span></div>
@@ -700,10 +702,7 @@
             <div class="checklist-item"><input type="checkbox"><span>3:20 PM (MAX!) - Drive back to Weatherford</span></div>
             <div class="checklist-item"><input type="checkbox"><span>5:30 PM - Night 3 - Frontier Days Rodeo</span></div>
             
-            <div class="polaroid-snap tilt-left">
-                <img src="images/stockyards.jpg" alt="Fort Worth Stockyards Photo">
-                <div class="polaroid-caption">The Longhorns walking down Fort Worth!</div>
-            </div>
+            <div id="gallery-chapter2" class="photo-gallery"></div>
 
             <h3>June 12 (FRI) - The Historic Fort Trail</h3>
             <div class="checklist-item"><input type="checkbox"><span>Morning: Drive north to Jacksboro (approx. 25 mins).</span></div>
@@ -860,10 +859,7 @@
             <div class="checklist-item"><input type="checkbox"><span>Sunset/Night: Head 9 miles east of town to the Marfa Lights Viewing Area.</span></div>
             <div class="checklist-item"><input type="checkbox"><span>Night: Drive back to Alpine basecamp.</span></div>
             
-            <div class="polaroid-snap tilt-right">
-                <img src="images/marfa_lights.jpg" alt="Marfa Lights Station Photo">
-                <div class="polaroid-caption">Waiting for the mysteries at the viewing center!</div>
-            </div>
+            <div id="gallery-chapter3" class="photo-gallery"></div>
 
             <h3>June 16 (TUE) - Forts & Galaxies</h3>
             <div class="checklist-item"><input type="checkbox"><span>Morning: Drive the "Scenic Loop" (Hwy 118 to Hwy 166) through the Davis Mountains.</span></div>
@@ -991,10 +987,7 @@
             <div class="checklist-item"><input type="checkbox"><span>Late Afternoon: Transition to Big Bend National Park</span></div>
             <div class="checklist-item"><input type="checkbox"><span>Sunset Hike: The Window View Trail in the Chisos Basin</span></div>
             
-            <div class="polaroid-snap tilt-left">
-                <img src="images/deep_desert.jpg" alt="Big Bend Landscape Photo">
-                <div class="polaroid-caption">Looking off into the Chisos Basin window view.</div>
-            </div>
+            <div id="gallery-chapter4" class="photo-gallery"></div>
 
             <h3>June 20 (SAT) - The Run Back to the Trees</h3>
             <div class="checklist-item"><input type="checkbox"><span>6:30 AM - Leave Terlingua. Drive North through the empty mountains.</span></div>
@@ -1057,14 +1050,81 @@
     </main>
 
     <script>
+        // CRITICAL CONFIGURATION: CHANGE THESE TO MATCH YOUR REPOSITORY
+        const GITHUB_USER = "YOUR_GITHUB_USERNAME"; 
+        const GITHUB_REPO = "YOUR_REPOSITORY_NAME";   
+
+        // Section Navigation Router Engine
         function showSection(sectionId) {
             const sections = document.querySelectorAll('.journal-section');
             sections.forEach(sec => sec.classList.remove('active'));
             document.getElementById(sectionId).classList.add('active');
-            
-            // Auto scroll main layout view back to top on switch
             document.querySelector('main').scrollTop = 0;
         }
+
+        // Automatic Folder Scanner and Polaroid Structural Builder Engine
+        async function loadChapterGalleries() {
+            if (GITHUB_USER === "YOUR_GITHUB_USERNAME" || GITHUB_REPO === "YOUR_REPOSITORY_NAME") {
+                console.log("Manifest Setup Note: Configure your GitHub profile fields to engage folder indexing.");
+                return;
+            }
+
+            const chapters = ["chapter1", "chapter2", "chapter3", "chapter4"];
+            
+            for (const ch of chapters) {
+                const targetElement = document.getElementById(`gallery-${ch}`);
+                if (!targetElement) continue;
+
+                try {
+                    // API Call to index directory contents dynamically from public branch asset registries
+                    const apiEndpoint = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/images/${ch}`;
+                    const response = await fetch(apiEndpoint);
+                    
+                    if (!response.ok) {
+                        console.warn(`Asset Engine Note: No active file registry found for route path: /images/${ch}`);
+                        continue;
+                    }
+
+                    const elementsList = await response.json();
+                    
+                    // Filter out directory structures to focus explicitly on verified image media assets
+                    const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+                    const imageryPayload = elementsList.filter(file => 
+                        file.type === "file" && 
+                        imageExtensions.some(ext => file.name.toLowerCase().endsWith(ext))
+                    );
+
+                    // Reconstruct the layout natively via virtual DOM ingestion passes
+                    imageryPayload.forEach(imageAsset => {
+                        // Normalize file string tokens to map clean title spacing strings dynamically
+                        let computedCaption = imageAsset.name.substring(0, imageAsset.name.lastIndexOf('.'));
+                        computedCaption = computedCaption.replace(/[-_]/g, ' ');
+
+                        const polaroidElement = document.createElement('div');
+                        polaroidElement.className = 'polaroid-snap';
+                        
+                        const imgTag = document.createElement('img');
+                        imgTag.src = imageAsset.download_url;
+                        imgTag.alt = computedCaption;
+                        imgTag.loading = "lazy"; // Conserve remote mobile roaming data budgets
+
+                        const captionTag = document.createElement('div');
+                        captionTag.className = 'polaroid-caption';
+                        captionTag.textContent = computedCaption;
+
+                        polaroidElement.appendChild(imgTag);
+                        polaroidElement.appendChild(captionTag);
+                        targetElement.appendChild(polaroidElement);
+                    });
+
+                } catch (err) {
+                    console.error(`Scrapbook Pipeline System Failure on route parsing sequence [${ch}]:`, err);
+                }
+            }
+        }
+
+        // Initiate file scanning pipelines immediately upon context binding load executions
+        window.addEventListener('DOMContentLoaded', loadChapterGalleries);
     </script>
 </body>
 </html>
